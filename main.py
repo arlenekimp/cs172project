@@ -11,31 +11,34 @@ reddit = praw.Reddit(
     username= r_username,
 )
 
-# reddit = praw.Reddit(
-#     client_id="N3quc_HTtVYONqPMcTavvg",
-#     client_secret="c7CgOu7FGZJg_uBa5NfuTH6vlo5Hbg",
-#     password="Tyson12@",
-#     user_agent="Comment Extraction (by u/USERNAME)",
-#     username="carrotsa",
-# )
+# subreddit = reddit.subreddit('restaurants')
+# top_subreddit = subreddit.new(limit=25)
+# words_collection = []
 
-# client_id=N3quc_HTtVYONqPMcTavvg
-# client_secret=c7CgOu7FGZJg_uBa5NfuTH6vlo5Hbg
-# user_agent=Comment Extraction (by u/USERNAME)
-# username=carrotsa 
-# password=Tyson12@
+# for submission in top_subreddit:
+#     title = submission.title
+#     title_words = title.split()
+#     words_collection.append(title_words)
 
-subreddit = reddit.subreddit('restaurants')
-top_subreddit = subreddit.new(limit=25)
-words_collection = []
+# print(words_collection)
 
-for submission in top_subreddit:
-    title = submission.title
-    title_words = title.split()
-    words_collection.append(title_words)
+#words_collection = []
 
-print(words_collection)
+top = reddit.subreddit("restaurants").top(limit=500)
+#data_collection = [ ]
 
 
-# with open("data.json", "w") as outfile:
-#     json.dump(data, outfile)
+with open("data_collection.jsonl", "w") as f:
+    for post in top: 
+        data = ({
+            "id": post.id,
+            "title": post.title,
+            "body": post.selftext,
+            "username": str(post.author),
+            "upvotes": post.score,
+            "url": post.url,
+            "permalink": post.permalink 
+        })
+        f.write(json.dumps(data))
+        f.write("\n")
+    #data_collection.append(data)
