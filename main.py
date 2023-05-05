@@ -16,7 +16,7 @@ reddit = praw.Reddit(
 )
 
 file_num = 1
-top = reddit.subreddit("restaurants").top(limit=None)
+top = reddit.subreddit("foodhacks").top(limit=None)
 
 with open(f"posts_{file_num}.jsonl", "w") as f:
     file_size = 0
