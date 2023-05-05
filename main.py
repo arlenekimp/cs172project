@@ -2,6 +2,7 @@ import praw
 import json
 import re
 import requests
+from urllib.request import urlopen
 from bs4 import BeautifulSoup
 
 from keys import r_client_id, r_client_secret, r_password, r_user_agent, r_username
@@ -30,38 +31,26 @@ with open("data_collection.jsonl", "w") as f:
             "permalink": post.permalink, 
             "comments": [],
             "urlNames": [],
-            "urlDesc": [],
-            "imageURL": []
+            "urlLink": []
         })
         post.comments.replace_more(limit=None)
         for comment in post.comments.list():
             data["comments"].append(comment.body)
             permalink = comment.permalink 
             # check if comment body contains a URL
-            # urls = re.findall("(?P<url>https?://[^\s]+)", comment.body)
-            # for url in urls:
-            #     # Send GET request to URL and parse the HTML
-            #     response = requests.get(url)
-            #     soup = BeautifulSoup(response.content, 'html.parser')
-
-            #     # extract info
-            #     if soup.title:
-            #         title = soup.title.string
-            #     else:
-            #         title = ""
-            #     description = soup.find("meta", property="og:description")["content"] 
-            #     if description:
-            #         description = description["content"]
-            #     else:
-            #         description = "" 
-            #     image_url = soup.find("meta", property="og:image")["content"] 
-            #     if image_url:
-            #         image_url = image_url["content"]
-            #     else:
-            #         image_url = "" 
-            #     data["urlNames"].append(title)
-            #     data["urlDesc"].append(description)
-            #     data["imageURL"].append(image_url)
+            urls = re.findall("(?P<url>https?://[^\s]+)", comment.body)
+            data["urlLink"].append(urls)
+            for url in urls:
+                try:
+                    html_page = urlopen(url)
+                    soup = BeautifulSoup(html_page, "html.parser")
+                    title = soup.title.string.strip()
+                    data["urlNames"].append(title)
+                except Exception as e:
+                # store an error message or flag in the JSON data for this URL
+                    data["urlNames"].append({"error": str(e)})
+                    # skip if error
+                    #pass
                 
             #     print(f"Title: {title}")
             #     print(f"Description: {description}")
