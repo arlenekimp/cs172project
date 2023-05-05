@@ -15,7 +15,7 @@ reddit = praw.Reddit(
 )
 
 file_num = 1
-top = reddit.subreddit("restaurants").top(limit=25)
+top = reddit.subreddit("restaurants").top(limit=None)
 
 with open("data_collection.jsonl", "w") as f:
     file_size = 0
