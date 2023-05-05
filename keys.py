@@ -1,0 +1,5 @@
+r_client_id = "hRS_ZvzHi7si0SEHDntrpQ"
+r_client_secret = "jCogfzU_hypHWUYzocHxyC3vNTA9dw"
+r_password = "csproject"
+r_user_agent = "csproj1 by user/First-Caterpillar-42"
+r_username = "First-Caterpillar-42"
