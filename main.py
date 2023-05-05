@@ -34,29 +34,38 @@ with open("data_collection.jsonl", "w") as f:
             "imageURL": []
         })
         post.comments.replace_more(limit=None)
-        for comment in post.comments:
+        for comment in post.comments.list():
             data["comments"].append(comment.body)
             permalink = comment.permalink 
             # check if comment body contains a URL
-            urls = re.findall("(?P<url>https?://[^\s]+)", comment.body)
-            for url in urls:
-                # Send GET request to URL and parse the HTML
-                response = requests.get(url)
-                soup = BeautifulSoup(response.content, 'html.parser')
+            # urls = re.findall("(?P<url>https?://[^\s]+)", comment.body)
+            # for url in urls:
+            #     # Send GET request to URL and parse the HTML
+            #     response = requests.get(url)
+            #     soup = BeautifulSoup(response.content, 'html.parser')
 
-                # extract info
-                title = soup.title.string
-                description = soup.find("meta", property="og:description")["content"] if soup.find("meta", property="og:description") else ""
-
-                image_url = soup.find("meta", property="og:image")["content"] if soup.find("meta", property="og:image") else ""
-
-                data["urlNames"].append(title)
-                data["urlDesc"].append(description)
-                data["imageURL"].append(image_url)
+            #     # extract info
+            #     if soup.title:
+            #         title = soup.title.string
+            #     else:
+            #         title = ""
+            #     description = soup.find("meta", property="og:description")["content"] 
+            #     if description:
+            #         description = description["content"]
+            #     else:
+            #         description = "" 
+            #     image_url = soup.find("meta", property="og:image")["content"] 
+            #     if image_url:
+            #         image_url = image_url["content"]
+            #     else:
+            #         image_url = "" 
+            #     data["urlNames"].append(title)
+            #     data["urlDesc"].append(description)
+            #     data["imageURL"].append(image_url)
                 
-                #print(f"Title: {title}")
-                print(f"Description: {description}")
-                print(f"Image URL: {image_url}")
+            #     print(f"Title: {title}")
+            #     print(f"Description: {description}")
+            #     print(f"Image URL: {image_url}")
         
         json_str = json.dumps(data)
         row_size = len(json_str) + 1  
