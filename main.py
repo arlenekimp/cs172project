@@ -1,5 +1,8 @@
 import praw
 import json
+import re
+import requests
+from bs4 import BeautifulSoup
 
 from keys import r_client_id, r_client_secret, r_password, r_user_agent, r_username
 
@@ -11,24 +14,11 @@ reddit = praw.Reddit(
     username= r_username,
 )
 
-# subreddit = reddit.subreddit('restaurants')
-# top_subreddit = subreddit.new(limit=25)
-# words_collection = []
-
-# for submission in top_subreddit:
-#     title = submission.title
-#     title_words = title.split()
-#     words_collection.append(title_words)
-
-# print(words_collection)
-
-#words_collection = []
-
-top = reddit.subreddit("restaurants").top(limit=500)
-#data_collection = [ ]
-
+file_num = 1
+top = reddit.subreddit("restaurants").top(limit=25)
 
 with open("data_collection.jsonl", "w") as f:
+    file_size = 0
     for post in top: 
         data = ({
             "id": post.id,
@@ -37,8 +27,45 @@ with open("data_collection.jsonl", "w") as f:
             "username": str(post.author),
             "upvotes": post.score,
             "url": post.url,
-            "permalink": post.permalink 
+            "permalink": post.permalink, 
+            "comments": [],
+            "urlNames": [],
+            "urlDesc": [],
+            "imageURL": []
         })
-        f.write(json.dumps(data))
+        post.comments.replace_more(limit=None)
+        for comment in post.comments:
+            data["comments"].append(comment.body)
+            permalink = comment.permalink 
+            # check if comment body contains a URL
+            urls = re.findall("(?P<url>https?://[^\s]+)", comment.body)
+            for url in urls:
+                # Send GET request to URL and parse the HTML
+                response = requests.get(url)
+                soup = BeautifulSoup(response.content, 'html.parser')
+
+                # extract info
+                title = soup.title.string
+                description = soup.find("meta", property="og:description")["content"] if soup.find("meta", property="og:description") else ""
+
+                image_url = soup.find("meta", property="og:image")["content"] if soup.find("meta", property="og:image") else ""
+
+                data["urlNames"].append(title)
+                data["urlDesc"].append(description)
+                data["imageURL"].append(image_url)
+                
+                #print(f"Title: {title}")
+                print(f"Description: {description}")
+                print(f"Image URL: {image_url}")
+        
+        json_str = json.dumps(data)
+        row_size = len(json_str) + 1  
+        if file_size + row_size > 10 * 1024 * 1024:
+            # If adding this row exceeds the file size limit, close current file and open a new one
+            f.close()
+            file_num += 1
+            f = open(f"reddit_{file_num}.jsonl", "w")
+            file_size = 0
+        f.write(json_str)
         f.write("\n")
-    #data_collection.append(data)
+        file_size += row_size
